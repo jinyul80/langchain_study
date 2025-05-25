@@ -159,6 +159,6 @@ if __name__ == "__main__":
     config = RunnableConfig(
         recursion_limit=20, configurable={"thread_id": uuid.uuid4()}
     )
-    inputs = {"question": "삼성전자가 AI 모델을 개발했나요?"}
+    inputs = {"question": "최신 인기있는 Front-end 프레임워크는 무엇인가요?"}
 
     stream_graph(app, inputs, config)

@@ -16,4 +16,5 @@ dependencies = [
     "pdfplumber>=0.11.6",
     "pytest>=8.3.5",
     "python-dotenv>=1.1.0",
+    "streamlit>=1.45.1",
 ]

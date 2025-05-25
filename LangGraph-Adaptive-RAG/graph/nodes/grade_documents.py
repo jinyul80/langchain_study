@@ -21,12 +21,16 @@ def grade_documents(state: GraphState):
         )
         grade = score.binary_score
         if grade == "yes":
-            print("---GRADE: DOCUMENT RELEVANT---")
+            # print("---GRADE: DOCUMENT RELEVANT---")
             # 관련성이 있는 문서 추가
             filtered_docs.append(doc)
         else:
             # 관련성이 없는 문서는 건너뛰기
-            print("---GRADE: DOCUMENT NOT RELEVANT---")
+            # print("---GRADE: DOCUMENT NOT RELEVANT---")
             continue
+
+    print(
+        f"Check documents: {len(documents)}, Filtered Documents: {len(filtered_docs)}"
+    )
 
     return {"documents": filtered_docs, "question": question}
