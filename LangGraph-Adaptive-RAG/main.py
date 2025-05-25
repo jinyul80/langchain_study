@@ -19,7 +19,10 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if question := st.chat_input("질문을 입력해주세요."):
+    # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": question})
+
+    # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(question)
 
@@ -28,14 +31,17 @@ if question := st.chat_input("질문을 입력해주세요."):
             inputs = {"question": question}
             response = app.invoke(inputs, config)
 
-            # app.invoke의 결과가 딕셔너리 형태일 경우 'answer' 키를 사용하거나,
+            # app.invoke의 결과가 딕셔너리 형태일 경우 'generation' 키를 사용하거나,
             # 전체 응답을 문자열로 변환하여 표시합니다.
             if isinstance(response, dict) and "generation" in response:
                 full_response = response["generation"]
             else:
                 full_response = str(response)  # 다른 형태의 응답을 문자열로 변환
 
+            # Display assistant response in chat message container
             st.markdown(full_response)
+
+            # Add user message to chat history
             st.session_state.messages.append(
                 {"role": "assistant", "content": full_response}
             )
