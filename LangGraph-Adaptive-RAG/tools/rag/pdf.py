@@ -7,6 +7,10 @@ from typing import List, Annotated
 
 class PDFRetrievalChain(RetrievalChain):
     def __init__(self, source_uri: Annotated[list[str], "Source URI"]):
+
+        # 부모 클래스 생성자 실행
+        super().__init__()
+
         self.source_uri = source_uri
         self.k = 10
 

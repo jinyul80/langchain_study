@@ -9,12 +9,16 @@ from abc import ABC, abstractmethod
 from operator import itemgetter
 from langchain import hub
 from langchain_text_splitters import TextSplitter
+import os
 
 
 class RetrievalChain(ABC):
     def __init__(self):
         self.source_uri = None
         self.k = 10
+
+        # 벡터 저장소 경로 설정
+        self.vector_db_path = "./data/db/"
 
     @abstractmethod
     def load_documents(self, source_uris) -> list[Any]:
@@ -33,10 +37,34 @@ class RetrievalChain(ABC):
     def create_embedding(self):
         return OllamaEmbeddings(model="nomic-embed-text")
 
-    def create_vectorstore(self, split_docs):
-        return FAISS.from_documents(
+    def create_vectorstore(self):
+        docs = self.load_documents(self.source_uri)
+        text_splitter = self.create_text_splitter()
+        split_docs = self.split_documents(docs, text_splitter)
+
+        # 디렉토리가 없으면 생성
+        if not os.path.exists(self.vector_db_path):
+            os.makedirs(self.vector_db_path)
+
+        # FAISS 벡터 저장소 생성 및 로컬에 저장
+        vectorstore = FAISS.from_documents(
             documents=split_docs, embedding=self.create_embedding()
         )
+        vectorstore.save_local(self.vector_db_path)
+        print("Vector store created and saved locally.")
+
+    def load_vectorstore(self):
+        # 경로가 없으면 vectorstore를 생성합니다.
+        if not os.path.exists(self.vector_db_path):
+            self.create_vectorstore()
+
+        # 저장된 벡터 저장소 로드
+        loaded_vectorstore = FAISS.load_local(
+            self.vector_db_path,
+            self.create_embedding(),
+            allow_dangerous_deserialization=True,
+        )
+        return loaded_vectorstore
 
     def create_retriever(self, vectorstore):
         # MMR을 사용하여 검색을 수행하는 retriever를 생성합니다.
@@ -56,10 +84,7 @@ class RetrievalChain(ABC):
         return "\n".join(docs)
 
     def create_chain(self):
-        docs = self.load_documents(self.source_uri)
-        text_splitter = self.create_text_splitter()
-        split_docs = self.split_documents(docs, text_splitter)
-        self.vectorstore = self.create_vectorstore(split_docs)
+        self.vectorstore = self.load_vectorstore()
         self.retriever = self.create_retriever(self.vectorstore)
         model = self.create_model()
         prompt = self.create_prompt()

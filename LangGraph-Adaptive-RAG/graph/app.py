@@ -4,9 +4,6 @@ load_dotenv()
 
 import os
 
-print(f"Current working directory: {os.getcwd()}")
-
-
 from graph.state import GraphState
 from graph.chains.router import question_router, RouteQuery
 from graph.chains.hallucination_grader import hallucination_grader, GradeHallucinations
@@ -25,6 +22,9 @@ from graph.nodes import web_search, generate, grade_documents, transform_query, 
 from typing import cast
 from langgraph.graph import END, StateGraph, START
 from langgraph.checkpoint.memory import MemorySaver
+from langchain_teddynote.messages import stream_graph
+from langchain_core.runnables import RunnableConfig
+import uuid
 
 
 # 질문 라우팅 분기 함수
@@ -154,3 +154,11 @@ if __name__ == "__main__":
 
     # Mermaid 형식의 PNG 이미지로 변환하여 표시
     app.get_graph().draw_mermaid_png(output_file_path="graph.png")
+
+    # config 설정(재귀 최대 횟수, thread_id)
+    config = RunnableConfig(
+        recursion_limit=20, configurable={"thread_id": uuid.uuid4()}
+    )
+    inputs = {"question": "삼성전자가 AI 모델을 개발했나요?"}
+
+    stream_graph(app, inputs, config)
